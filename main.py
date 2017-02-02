@@ -45,22 +45,22 @@ page_footer = """
 def make_form(values):
     form="""
     <form method="POST">
-        <label>Username
+        <label>Username:
             <input type="text" name="username" value="%(username)s" />
             <span class="error">%(username_error)s</span>
         </label>
         <br>
-        <label>Password
-            <input type="text" name="password" value="%(password)s" />
+        <label>Password:
+            <input type="password" name="password" value="%(password)s" />
             <span class="error">%(password_error)s</span>
         </label>
         <br>
-        <label>Verify Password
-            <input type="text" name="verify" value="%(verify)s" />
+        <label>Verify Password:
+            <input type="password" name="verify" value="%(verify)s" />
             <span class="error">%(verify_error)s</span>
         </label>
         <br>
-        <label>Email
+        <label>Email:
             <input type="text" name="email" value="%(email)s" />
             <span class="error">%(email_error)s</span>
         </label>
@@ -121,24 +121,29 @@ class MainHandler(webapp2.RequestHandler):
             'email_error': ''
         }
 
-        if (not username) or username.isspace() or (username.strip() == ""):
+        if username.isspace() or (username.strip() == ""):
             values['username_error'] = "Please enter a user name"
         else:
             if not valid_username(username):
                 values['username_error'] = "Please enter valid user name characters"
 
         if not valid_password(password):
+            values['password'] = ''
             # make a helpful error message
             values['password_error'] = "Please enter valid password characters"
 
         if not valid_password(verify):
+            values['verify'] = ''
             values['verify_error'] = "Please enter valid password characters"
         else:
             if verify != password:
+                values['password'] = ''
+                values['verify'] = ''
                 values['verify_error'] = "Verify password doesn't match password"
 
-        if not valid_email(email):
-            values['email_error'] = "Please enter valid email characters"
+        if (not email.isspace()) and (email.strip() != ""):
+            if not valid_email(email):
+                values['email_error'] = "Please enter valid email characters"
 
         self.response.write(make_form(values))
 
