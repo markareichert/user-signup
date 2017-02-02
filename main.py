@@ -97,6 +97,7 @@ class MainHandler(webapp2.RequestHandler):
         self.response.write(make_form(values))
 
     def post(self):
+        have_error = False
         username = self.request.get("username")
         password = self.request.get("password")
         verify = self.request.get("verify")
@@ -123,31 +124,48 @@ class MainHandler(webapp2.RequestHandler):
 
         if username.isspace() or (username.strip() == ""):
             values['username_error'] = "Please enter a user name"
+            have_error = True
         else:
             if not valid_username(username):
-                values['username_error'] = "Please enter valid user name characters"
+                values['username_error'] = "Please enter valid user name"
+                have_error = True
 
         if not valid_password(password):
             values['password'] = ''
             # make a helpful error message
-            values['password_error'] = "Please enter valid password characters"
+            values['password_error'] = "Please enter valid password"
+            have_error = True
 
         if not valid_password(verify):
             values['verify'] = ''
-            values['verify_error'] = "Please enter valid password characters"
+            values['verify_error'] = "Please enter valid password"
+            have_error = True
         else:
             if verify != password:
                 values['password'] = ''
                 values['verify'] = ''
                 values['verify_error'] = "Verify password doesn't match password"
+                have_error = True
 
         if (not email.isspace()) and (email.strip() != ""):
             if not valid_email(email):
-                values['email_error'] = "Please enter valid email characters"
+                values['email_error'] = "Please enter valid email"
+                have_error = True
 
-        self.response.write(make_form(values))
+        if have_error:
+            self.response.write(make_form(values))
+        else:
+            self.redirect('/welcome?username=' + username)
 
+class WelcomeHandler(webapp2.RequestHandler):
+    def get(self):
+        username = self.request.get("username")
+        if valid_username(username):
+            self.response.write("<h2>Welcome, " + username + "</h2>")
+        else:
+            self.redirect('/')
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler),
+    ('/welcome', WelcomeHandler)
 ], debug=True)
